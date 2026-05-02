@@ -1,0 +1,26 @@
+name: Generate Animations
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Generate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BATCH_SIZE: '20'
+        run: python generator/generate.py
+      - name: Save
+        run: |
+          git config user.name "AnimBot"
+          git config user.email "bot@klip.ai"
+          git add db/
+          git diff --staged --quiet || git commit -m "New animations" && git push
